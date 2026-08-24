@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="it" class="h-full bg-slate-100 text-slate-800">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulatore della Mole & Massa Molare - Chimica II Anno</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Custom light scrollbars */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Balance scale animation transitions */
+        .balance-beam { transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .balance-pan { transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    </style>
+</head>
+<body class="h-full flex flex-col min-h-screen selection:bg-cyan-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-white/90 backdrop-blur border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center text-white font-black text-xl shadow-md shadow-cyan-500/20">
+                        <i class="fa-solid fa-atom"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-slate-900 leading-tight">MolarLab <span class="text-xs px-2 py-0.5 rounded bg-cyan-100 text-cyan-800 border border-cyan-300 font-semibold">2° Anno ITT</span></h1>
+                        <p class="text-xs text-slate-500">Simulatore per la Mole e la Massa Molare</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex space-x-1">
+                    <button onclick="switchTab('lab')" id="tab-btn-lab" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium transition-all bg-cyan-600 text-white shadow-md">
+                        <i class="fa-solid fa-scale-balanced mr-1.5"></i>Bilancia Comparativa
+                    </button>
+                    <button onclick="switchTab('micro')" id="tab-btn-micro" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all">
+                        <i class="fa-solid fa-microscope mr-1.5"></i>Micro vs Macro
+                    </button>
+                    <button onclick="switchTab('builder')" id="tab-btn-builder" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all">
+                        <i class="fa-solid fa-flask-vial mr-1.5"></i>Costruttore Composti
+                    </button>
+                    <button onclick="switchTab('calc')" id="tab-btn-calc" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all">
+                        <i class="fa-solid fa-calculator mr-1.5"></i>Calcolatore
+                    </button>
+                    <button onclick="switchTab('quiz')" id="tab-btn-quiz" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all">
+                        <i class="fa-solid fa-graduation-cap mr-1.5"></i>Quiz & Sfida
+                    </button>
+                </nav>
+
+                <!-- Mobile Menu Button -->
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Nav -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200 bg-white px-4 pt-2 pb-4 space-y-1 shadow-lg">
+            <button onclick="switchTab('lab'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-white bg-cyan-600">
+                <i class="fa-solid fa-scale-balanced mr-2"></i>Bilancia Comparativa
+            </button>
+            <button onclick="switchTab('micro'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100">
+                <i class="fa-solid fa-microscope mr-2"></i>Micro vs Macro
+            </button>
+            <button onclick="switchTab('builder'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100">
+                <i class="fa-solid fa-flask-vial mr-2"></i>Costruttore Composti
+            </button>
+            <button onclick="switchTab('calc'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100">
+                <i class="fa-solid fa-calculator mr-2"></i>Calcolatore
+            </button>
+            <button onclick="switchTab('quiz'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-100">
+                <i class="fa-solid fa-graduation-cap mr-2"></i>Quiz & Sfida
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+        <!-- TAB 1: BALANCE COMPARISON -->
+        <section id="tab-lab" class="tab-content space-y-6">
+            <!-- Header explanation card -->
+            <div class="bg-gradient-to-r from-cyan-50 via-white to-sky-50 rounded-2xl p-5 border border-cyan-200 shadow-md relative overflow-hidden">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-balance-scale text-cyan-600"></i>
+                            Confronto Moli sulla Bilancia a Due Piatti
+                        </h2>
+                        <p class="text-sm text-slate-700 mt-1 max-w-3xl leading-relaxed">
+                            La <strong class="text-cyan-800">mole (mol)</strong> è l'unità di misura della quantità di sostanza. Una mole contiene sempre esattamente <span class="font-mono text-cyan-700 font-bold">6,022 × 10²³</span> entità elementari (Numero di Avogadro N<sub>A</sub>), ma la sua <strong class="text-amber-700">massa (in grammi) varia</strong> in base alla massa molare (M) di ciascun composto!
+                        </p>
+                    </div>
+                    <div class="bg-white border border-cyan-200 rounded-xl p-3 flex items-center gap-3 shrink-0 shadow-sm">
+                        <div class="p-2 rounded-lg bg-cyan-100 text-cyan-700 font-bold font-mono text-lg">N<sub>A</sub></div>
+                        <div>
+                            <div class="text-xs text-slate-500">Costante di Avogadro</div>
+                            <div class="text-sm font-mono text-cyan-800 font-bold">6,022 × 10²³ part/mol</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Panel -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Substance A Selector -->
+                <div class="bg-white rounded-2xl p-5 border border-cyan-200 shadow-md space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-cyan-800 bg-cyan-100 px-2.5 py-1 rounded-full border border-cyan-300">Piatto Sinistro (A)</span>
+                        <span id="substance-a-formula" class="font-mono text-lg font-bold text-cyan-700">H₂O</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-600 font-medium mb-1">Seleziona Sostanza A:</label>
+                        <select id="select-a" onchange="updateBalance()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                            <!-- Filled dynamically by JS -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-700 font-medium mb-1">
+                            <span>Numero di Moli (n<sub>A</sub>):</span>
+                            <span id="moles-a-val" class="font-mono text-cyan-700 font-bold">1,00 mol</span>
+                        </div>
+                        <input type="range" id="moles-a" min="0.1" max="5.0" step="0.1" value="1.0" oninput="updateBalance()" class="w-full accent-cyan-600 bg-slate-200 rounded-lg cursor-pointer h-2">
+                        <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+                            <span>0,1 mol</span>
+                            <span>2,5 mol</span>
+                            <span>5,0 mol</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-2 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-slate-600">Massa Molare (M<sub>A</sub>):</span>
+                            <span id="mm-a" class="font-mono text-cyan-700 font-bold">18,015 g/mol</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-600">Massa Totale (m<sub>A</sub>):</span>
+                            <span id="mass-a" class="font-mono text-cyan-800 font-extrabold text-sm">18,02 g</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-600">Numero Particelle (N<sub>A</sub>):</span>
+                            <span id="particles-a" class="font-mono text-slate-800 font-bold">6,022 × 10²³</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Substance B Selector -->
+                <div class="bg-white rounded-2xl p-5 border border-amber-200 shadow-md space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-2.5 py-1 rounded-full border border-amber-300">Piatto Destro (B)</span>
+                        <span id="substance-b-formula" class="font-mono text-lg font-bold text-amber-700">NaCl</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-600 font-medium mb-1">Seleziona Sostanza B:</label>
+                        <select id="select-b" onchange="updateBalance()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                            <!-- Filled dynamically by JS -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-700 font-medium mb-1">
+                            <span>Numero di Moli (n<sub>B</sub>):</span>
+                            <span id="moles-b-val" class="font-mono text-amber-700 font-bold">1,00 mol</span>
+                        </div>
+                        <input type="range" id="moles-b" min="0.1" max="5.0" step="0.1" value="1.0" oninput="updateBalance()" class="w-full accent-amber-600 bg-slate-200 rounded-lg cursor-pointer h-2">
+                        <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+                            <span>0,1 mol</span>
+                            <span>2,5 mol</span>
+                            <span>5,0 mol</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-2 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-slate-600">Massa Molare (M<sub>B</sub>):</span>
+                            <span id="mm-b" class="font-mono text-amber-700 font-bold">58,44 g/mol</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-600">Massa Totale (m<sub>B</sub>):</span>
+                            <span id="mass-b" class="font-mono text-amber-800 font-extrabold text-sm">58,44 g</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-600">Numero Particelle (N<sub>B</sub>):</span>
+                            <span id="particles-b" class="font-mono text-slate-800 font-bold">6,022 × 10²³</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Presets & Key Takeaways -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-md space-y-4 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-purple-600"></i>
+                            Confronti Didattici Suggeriti
+                        </h3>
+                        <div class="space-y-2">
+                            <button onclick="presetBalance('H2O', 1.0, 'CO2', 1.0)" class="w-full text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-cyan-50 border border-slate-200 text-xs text-slate-700 transition flex items-center justify-between">
+                                <span>1 mol H₂O vs 1 mol CO₂</span>
+                                <span class="font-mono text-cyan-700 font-bold">18,0g vs 44,0g</span>
+                            </button>
+                            <button onclick="presetBalance('H2', 1.0, 'Au', 1.0)" class="w-full text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-cyan-50 border border-slate-200 text-xs text-slate-700 transition flex items-center justify-between">
+                                <span>1 mol Idrogeno (H₂) vs 1 mol Oro (Au)</span>
+                                <span class="font-mono text-cyan-700 font-bold">2,02g vs 197,0g</span>
+                            </button>
+                            <button onclick="presetBalance('NaCl', 1.0, 'C6H12O6', 1.0)" class="w-full text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-cyan-50 border border-slate-200 text-xs text-slate-700 transition flex items-center justify-between">
+                                <span>1 mol Sale (NaCl) vs 1 mol Glucosio</span>
+                                <span class="font-mono text-cyan-700 font-bold">58,4g vs 180,2g</span>
+                            </button>
+                            <button onclick="presetBalance('H2O', 5.0, 'CuSO4.5H2O', 0.36)" class="w-full text-left px-3 py-2 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-200 text-xs text-slate-700 transition flex items-center justify-between">
+                                <span>Stessa massa (~90g) ma moli diverse!</span>
+                                <span class="font-mono text-emerald-700 font-bold">5,0mol vs 0,36mol</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-cyan-50 border border-cyan-200 rounded-xl p-3 text-xs text-cyan-900 leading-relaxed">
+                        <i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i>
+                        <strong>Concetto chiave:</strong> Stesso numero di moli &rarr; Stesso numero di molecole (N), ma massa diversa perché la massa dei singoli atomi costituenti varia!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphic Interactive Balance Container -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-md relative overflow-hidden flex flex-col items-center justify-center">
+                <div class="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-widest">Simulazione Grafica Bilancia Dinamica</div>
+                
+                <!-- SVG Interactive Scale -->
+                <svg id="balance-svg" viewBox="0 0 800 380" class="w-full max-w-3xl h-auto overflow-visible">
+                    <defs>
+                        <!-- Gradients for Light Theme -->
+                        <linearGradient id="baseGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#cbd5e1"/>
+                            <stop offset="100%" stop-color="#64748b"/>
+                        </linearGradient>
+                        <linearGradient id="beamGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#0284c7"/>
+                            <stop offset="50%" stop-color="#94a3b8"/>
+                            <stop offset="100%" stop-color="#d97706"/>
+                        </linearGradient>
+                        <linearGradient id="panAGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#06b6d4"/>
+                            <stop offset="100%" stop-color="#0891b2"/>
+                        </linearGradient>
+                        <linearGradient id="panBGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#f59e0b"/>
+                            <stop offset="100%" stop-color="#d97706"/>
+                        </linearGradient>
+                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="6" stdDeviation="4" flood-opacity="0.15"/>
+                        </filter>
+                    </defs>
+
+                    <!-- Stand / Base -->
+                    <path d="M 370,330 L 430,330 L 410,180 L 390,180 Z" fill="url(#baseGrad)" stroke="#475569" stroke-width="2"/>
+                    <rect x="320" y="330" width="160" height="20" rx="6" fill="#475569" stroke="#334155" stroke-width="2"/>
+                    
+                    <!-- Fulcrum / Pivot -->
+                    <polygon points="400,165 385,185 415,185" fill="#0284c7" />
+                    <circle cx="400" cy="180" r="6" fill="#f8fafc"/>
+
+                    <!-- Main Beam Group (Rotates based on mass difference) -->
+                    <g id="balance-beam-group" class="balance-beam" transform-origin="400 180" transform="rotate(0)">
+                        <!-- Beam horizontal bar -->
+                        <rect x="100" y="174" width="600" height="12" rx="6" fill="url(#beamGrad)" stroke="#475569" stroke-width="1.5" filter="url(#shadow)"/>
+                        <circle cx="400" cy="180" r="10" fill="#f8fafc" stroke="#0284c7" stroke-width="3"/>
+
+                        <!-- Left String & Pan A -->
+                        <g id="pan-a-group" class="balance-pan" transform-origin="130 180">
+                            <!-- Chains -->
+                            <line x1="130" y1="180" x2="80" y2="270" stroke="#0284c7" stroke-width="2" stroke-dasharray="3,3"/>
+                            <line x1="130" y1="180" x2="180" y2="270" stroke="#0284c7" stroke-width="2" stroke-dasharray="3,3"/>
+                            
+                            <!-- Dish A -->
+                            <path d="M 60,270 Q 130,295 200,270 Z" fill="url(#panAGrad)" stroke="#0284c7" stroke-width="2" filter="url(#shadow)"/>
+
+                            <!-- Flask A on Pan A -->
+                            <g transform="translate(100, 190)">
+                                <!-- Flask body -->
+                                <path d="M 20,40 L 10,70 Q 30,80 50,70 L 40,40 Z" fill="#06b6d4" fill-opacity="0.2" stroke="#0891b2" stroke-width="2"/>
+                                <!-- Substance fill height -->
+                                <path id="flask-fill-a" d="M 12,65 Q 30,75 48,65 L 45,72 Q 30,81 15,72 Z" fill="#0891b2" fill-opacity="0.9"/>
+                                <text id="svg-text-a" x="30" y="58" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="bold" font-family="monospace">18g</text>
+                            </g>
+                        </g>
+
+                        <!-- Right String & Pan B -->
+                        <g id="pan-b-group" class="balance-pan" transform-origin="670 180">
+                            <!-- Chains -->
+                            <line x1="670" y1="180" x2="620" y2="270" stroke="#d97706" stroke-width="2" stroke-dasharray="3,3"/>
+                            <line x1="670" y1="180" x2="720" y2="270" stroke="#d97706" stroke-width="2" stroke-dasharray="3,3"/>
+                            
+                            <!-- Dish B -->
+                            <path d="M 600,270 Q 670,295 740,270 Z" fill="url(#panBGrad)" stroke="#d97706" stroke-width="2" filter="url(#shadow)"/>
+
+                            <!-- Flask B on Pan B -->
+                            <g transform="translate(640, 190)">
+                                <!-- Flask body -->
+                                <path d="M 20,40 L 10,70 Q 30,80 50,70 L 40,40 Z" fill="#f59e0b" fill-opacity="0.2" stroke="#d97706" stroke-width="2"/>
+                                <!-- Substance fill height -->
+                                <path id="flask-fill-b" d="M 12,65 Q 30,75 48,65 L 45,72 Q 30,81 15,72 Z" fill="#d97706" fill-opacity="0.9"/>
+                                <text id="svg-text-b" x="30" y="58" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="bold" font-family="monospace">58g</text>
+                            </g>
+                        </g>
+                    </g>
+
+                    <!-- Center Angle Indicator Gauge -->
+                    <path d="M 370,130 A 30,30 0 0,1 430,130" fill="none" stroke="#94a3b8" stroke-width="3"/>
+                    <line id="pointer-needle" x1="400" y1="180" x2="400" y2="135" stroke="#dc2626" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+
+                <!-- Status Banner underneath balance -->
+                <div id="balance-status-banner" class="mt-4 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-center text-slate-700 shadow-sm">
+                    Sulla bilancia c'è un perfetto equilibrio o un piatto pende verso la sostanza più pesante?
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: MICROSCOPIC VS MACROSCOPIC VIEW -->
+        <section id="tab-micro" class="tab-content space-y-6 hidden">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-md">
+                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-microscope text-cyan-600"></i>
+                    Dal Mondo Microscopico (Atomi/Molecole) al Mondo Macroscopico (Grammi)
+                </h2>
+                <p class="text-sm text-slate-600 mt-1">
+                    Osserva le molecole in movimento nel contenitore microscopico e scopri come gli atomi costituenti contribuiscono alla massa molare totale (M).
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left: Selector & Atomic Composition Chart -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-md space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Seleziona Composto:</label>
+                        <select id="micro-select" onchange="updateMicroView()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold text-cyan-800 focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+
+                    <!-- Formula Info Card -->
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-slate-500">Formula Chimica:</span>
+                            <span id="micro-formula-display" class="text-xl font-bold font-mono text-cyan-700">H₂O</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-slate-500">Nome Composto:</span>
+                            <span id="micro-name-display" class="text-sm text-slate-800 font-semibold">Acqua</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-slate-500">Massa Molare (M):</span>
+                            <span id="micro-molar-mass" class="text-base font-bold font-mono text-emerald-700">18,015 g/mol</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-slate-500">Stato Fisico a T.A.:</span>
+                            <span id="micro-state-display" class="text-xs px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 font-medium border border-blue-200">Liquido</span>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown Table of elements in formula -->
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Composizione Atomica:</h4>
+                        <div id="micro-atomic-breakdown" class="space-y-2 text-xs">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center: Interactive 2D Canvas Microscopic Particle Visualizer -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-md flex flex-col justify-between space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-ping"></span>
+                            Vista Microscopica Simulata
+                        </span>
+                        <span class="text-[11px] text-slate-500">Box: ~30 Particelle Rappresentative</span>
+                    </div>
+
+                    <!-- Canvas container -->
+                    <div class="relative w-full aspect-square bg-slate-50 rounded-xl border border-slate-200 overflow-hidden shadow-inner flex items-center justify-center">
+                        <canvas id="particle-canvas" class="w-full h-full block"></canvas>
+                        
+                        <!-- Floating legend overlay -->
+                        <div id="canvas-legend" class="absolute bottom-2 left-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] text-slate-700 shadow-sm flex items-center gap-3">
+                            <!-- Populated JS -->
+                        </div>
+                    </div>
+
+                    <div class="text-center text-xs text-slate-500 italic">
+                        In 1 mole reale ci sono 6,022 × 10²³ di queste molecole!
+                    </div>
+                </div>
+
+                <!-- Right: Chart of Mass Contribution -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-md flex flex-col justify-between space-y-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800 mb-1">Ripartizione Percentuale in Massa</h3>
+                        <p class="text-xs text-slate-500">Quali atomi pesano di più nel totale della mole?</p>
+                    </div>
+
+                    <div class="relative flex-1 flex items-center justify-center min-h-[220px]">
+                        <canvas id="mass-pie-chart"></canvas>
+                    </div>
+
+                    <div class="bg-cyan-50 rounded-xl p-3 border border-cyan-200 text-xs text-slate-700 space-y-1">
+                        <div class="font-bold text-cyan-800">Curiosità didattica:</div>
+                        <div id="micro-didactic-fact">
+                            Nonostante ci siano 2 atomi di Idrogeno e solo 1 atomo di Ossigeno in H₂O, l'Ossigeno rappresenta circa l'88.8% della massa totale!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: COMPOUND BUILDER -->
+        <section id="tab-builder" class="tab-content space-y-6 hidden">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-md">
+                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-flask-vial text-cyan-600"></i>
+                    Costruttore di Composti e Calcolo Passo-Passo della Massa Molare
+                </h2>
+                <p class="text-sm text-slate-600 mt-1">
+                    Crea qualsiasi formula chimica selezionando gli elementi della Tavola Periodica o digitando la formula per vederne il calcolo dettagliato della massa molare (M).
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Formula Input & Builder Box -->
+                <div class="lg:col-span-5 bg-white rounded-2xl p-5 border border-slate-200 shadow-md space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Inserisci Formula Chimica:</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="builder-input" value="H2SO4" placeholder="Es. H2SO4, CaCO3, C6H12O6..." class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-lg font-mono font-bold text-cyan-800 focus:ring-2 focus:ring-cyan-500 focus:outline-none uppercase">
+                            <button onclick="calculateCustomFormula()" class="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-700 font-bold text-white rounded-xl shadow-md transition">
+                                Calcola
+                            </button>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1">Usa lettere maiuscole e numeri (es. H2SO4, NaCl, C2H5OH, Fe2O3).</p>
+                    </div>
+
+                    <!-- Mini Fast Pickers -->
+                    <div>
+                        <span class="text-xs font-semibold text-slate-600 block mb-2">Esempi Rapidi da Provare:</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="setBuilderInput('H2O')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-mono font-bold text-cyan-800">H₂O</button>
+                            <button onclick="setBuilderInput('CO2')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-mono font-bold text-cyan-800">CO₂</button>
+                            <button onclick="setBuilderInput('NaCl')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-mono font-bold text-cyan-800">NaCl</button>
+                            <button onclick="setBuilderInput('H2SO4')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-mono font-bold text-cyan-800">H₂SO₄</button>
+                            <button onclick="setBuilderInput('CaCO3')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-mono font-bold text-cyan-800">CaCO₃</button>
+                            <button onclick="setBuilderInput('C6H12O6')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-mono font-bold text-cyan-800">C₆H₁₂O₆</button>
+                            <button onclick="setBuilderInput('NH3')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-mono font-bold text-cyan-800">NH₃</button>
+                            <button onclick="setBuilderInput('CuSO4')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-mono font-bold text-cyan-800">CuSO₄</button>
+                        </div>
+                    </div>
+
+                    <!-- Mini Interactive Periodic Elements Palette -->
+                    <div>
+                        <span class="text-xs font-semibold text-slate-600 block mb-2">Aggiungi Elementi Comuni:</span>
+                        <div id="element-palette" class="grid grid-cols-6 gap-1.5">
+                            <!-- Populated JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step-by-Step Stepwise Calculation Output -->
+                <div class="lg:col-span-7 bg-white rounded-2xl p-5 border border-slate-200 shadow-md space-y-4">
+                    <h3 class="text-sm font-bold text-slate-800 flex items-center justify-between">
+                        <span>Scomposizione Stechiometrica Dettagliata</span>
+                        <span id="builder-result-badge" class="font-mono text-base text-emerald-800 font-extrabold bg-emerald-100 px-3 py-1 rounded-xl border border-emerald-300">M = 98,08 g/mol</span>
+                    </h3>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-500 uppercase tracking-wider">
+                                    <th class="p-2">Elemento</th>
+                                    <th class="p-2 text-center">N° Atomi</th>
+                                    <th class="p-2 text-right">Massa Atomica (A<sub>r</sub>)</th>
+                                    <th class="p-2 text-right">Contributo Parziale</th>
+                                    <th class="p-2 text-right">% in Massa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="builder-table-body" class="divide-y divide-slate-100 font-mono text-slate-700">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Explicit Mathematical Formula View -->
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-2">
+                        <div class="text-xs font-bold text-slate-600">Formula Matematica Applicata:</div>
+                        <div id="builder-math-expression" class="font-mono text-xs sm:text-sm text-cyan-800 overflow-x-auto whitespace-nowrap p-2.5 bg-white rounded-lg border border-slate-200 font-semibold">
+                            M = (2 × 1.008) + (1 × 32.06) + (4 × 15.999) = 98.08 g/mol
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: STECHIOMETRIC CALCULATOR -->
+        <section id="tab-calc" class="tab-content space-y-6 hidden">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-md">
+                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-calculator text-cyan-600"></i>
+                    Calcolatore Triangolo della Mole (n = m / M)
+                </h2>
+                <p class="text-sm text-slate-600 mt-1">
+                    Converti istantaneamente tra Massa (m), Moli (n), Numero di Particelle (N) e Volume di un Gas a condizioni standard (STP: 0 °C, 1 atm).
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Triangle Visualizer & Formula Selector -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-md space-y-4">
+                    <h3 class="text-sm font-bold text-slate-800">Scegli la grandezza da calcolare:</h3>
+
+                    <div class="grid grid-cols-1 gap-2">
+                        <button onclick="setCalcMode('m')" id="calc-mode-m" class="calc-mode-btn p-3 rounded-xl border border-cyan-500 bg-cyan-50 text-left transition flex items-center justify-between">
+                            <div>
+                                <div class="font-bold text-sm text-cyan-800">Massa m (in grammi)</div>
+                                <div class="text-xs text-slate-500 font-mono">m = n × M</div>
+                            </div>
+                            <i class="fa-solid fa-weight-hanging text-cyan-600"></i>
+                        </button>
+                        <button onclick="setCalcMode('n')" id="calc-mode-n" class="calc-mode-btn p-3 rounded-xl border border-slate-200 bg-slate-50 text-left hover:bg-slate-100 transition flex items-center justify-between">
+                            <div>
+                                <div class="font-bold text-sm text-slate-800">Moli n (in mol)</div>
+                                <div class="text-xs text-slate-500 font-mono">n = m / M</div>
+                            </div>
+                            <i class="fa-solid fa-vial text-slate-500"></i>
+                        </button>
+                        <button onclick="setCalcMode('N')" id="calc-mode-N" class="calc-mode-btn p-3 rounded-xl border border-slate-200 bg-slate-50 text-left hover:bg-slate-100 transition flex items-center justify-between">
+                            <div>
+                                <div class="font-bold text-sm text-slate-800">Particelle N (molecole/atomi)</div>
+                                <div class="text-xs text-slate-500 font-mono">N = n × N<sub>A</sub></div>
+                            </div>
+                            <i class="fa-solid fa-atom text-slate-500"></i>
+                        </button>
+                    </div>
+
+                    <!-- Formula Triangle SVG Diagram -->
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 flex flex-col items-center justify-center">
+                        <div class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mb-1">Triangolo Didattico</div>
+                        <svg viewBox="0 0 200 160" class="w-44 h-auto">
+                            <polygon points="100,10 10,150 190,150" fill="white" stroke="#94a3b8" stroke-width="2"/>
+                            <line x1="45" y1="90" x2="155" y2="90" stroke="#94a3b8" stroke-width="2"/>
+                            <line x1="100" y1="90" x2="100" y2="150" stroke="#94a3b8" stroke-width="2"/>
+                            <text x="100" y="65" text-anchor="middle" fill="#0284c7" font-weight="bold" font-size="22" font-family="monospace">m</text>
+                            <text x="55" y="130" text-anchor="middle" fill="#0891b2" font-weight="bold" font-size="20" font-family="monospace">n</text>
+                            <text x="145" y="130" text-anchor="middle" fill="#d97706" font-weight="bold" font-size="20" font-family="monospace">M</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Interactive Calculation Inputs & Output -->
+                <div class="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-200 shadow-md space-y-5 flex flex-col justify-between">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+                            <h3 class="text-sm font-bold text-slate-800">Seleziona Sostanza di Riferimento:</h3>
+                            <select id="calc-substance" onchange="runCalculator()" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-cyan-800">
+                                <!-- Populated JS -->
+                            </select>
+                        </div>
+
+                        <!-- Dynamic Inputs depending on mode -->
+                        <div id="calc-inputs-container" class="space-y-4">
+                            <!-- Populated JS -->
+                        </div>
+                    </div>
+
+                    <!-- Output Card -->
+                    <div class="bg-gradient-to-r from-cyan-50 to-sky-100 rounded-xl p-5 border border-cyan-300 shadow-sm space-y-3">
+                        <div class="text-xs text-cyan-900 uppercase font-bold tracking-wider">Risultato del Calcolo:</div>
+                        <div id="calc-result-display" class="font-mono text-2xl sm:text-3xl font-extrabold text-slate-900">
+                            m = 18,02 g
+                        </div>
+                        <div id="calc-explanation" class="text-xs text-slate-700 border-t border-cyan-200 pt-2 font-mono">
+                            Passaggi: m = 1,00 mol × 18,015 g/mol = 18,02 g
+                        </div>
+
+                        <!-- Gas STP Volume info -->
+                        <div id="calc-gas-info" class="mt-2 text-xs bg-white/80 rounded-lg p-2.5 border border-cyan-200 text-slate-700 flex items-center justify-between shadow-xs">
+                            <span><i class="fa-solid fa-wind text-blue-600 mr-1.5"></i>Volume occupato in fase gassosa a STP (22,414 L/mol):</span>
+                            <span id="calc-gas-volume" class="font-mono text-cyan-800 font-bold">22,41 L</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: QUIZ & CHALLENGE -->
+        <section id="tab-quiz" class="tab-content space-y-6 hidden">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-graduation-cap text-cyan-600"></i>
+                        Mettiti alla Prova! Quiz sulla Mole e Massa Molare
+                    </h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        Verifica le tue conoscenze con queste domande pensate per il secondo anno di istituto tecnico chimico.
+                    </p>
+                </div>
+                <div class="bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 text-center shrink-0">
+                    <div class="text-[10px] text-slate-500 uppercase font-semibold">Punteggio</div>
+                    <div id="quiz-score" class="text-xl font-bold font-mono text-cyan-700">0 / 5</div>
+                </div>
+            </div>
+
+            <!-- Quiz Container -->
+            <div id="quiz-container" class="space-y-4">
+                <!-- Dynamically generated question cards -->
+            </div>
+
+            <div class="flex justify-end">
+                <button onclick="resetQuiz()" class="px-5 py-2.5 bg-white hover:bg-slate-100 border border-slate-300 rounded-xl text-xs font-bold text-slate-700 transition shadow-sm">
+                    <i class="fa-solid fa-rotate-right mr-1.5"></i>Ricomincia Quiz
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-auto">
+        <p>MolarLab Simulatore Didattico - Indirizzo Chimica, Materiali e Biotecnologie (Classe Seconda ITT)</p>
+    </footer>
+
+    <script>
+        /* Database of Substances for 2nd Year Technical Chemistry Curriculum */
+        const chemicalDatabase = [
+            { id: 'H2O', name: 'Acqua', formula: 'H₂O', parsedFormula: { H: 2, O: 1 }, molarMass: 18.015, state: 'Liquido', color: '#0284c7', size: 12, shape: 'bent', fact: '1 mole di acqua pesa circa 18 grammi ed ha un volume di esattamente 18 mL!' },
+            { id: 'CO2', name: 'Anidride Carbonica', formula: 'CO₂', parsedFormula: { C: 1, O: 2 }, molarMass: 44.01, state: 'Gas', color: '#64748b', size: 14, shape: 'linear', fact: 'A condizioni STP, 1 mole di CO₂ occupa 22,414 litri di volume.' },
+            { id: 'NaCl', name: 'Cloruro di Sodio (Sale)', formula: 'NaCl', parsedFormula: { Na: 1, Cl: 1 }, molarMass: 58.44, state: 'Solido', color: '#d97706', size: 16, shape: 'crystal', fact: '1 mole di sale da cucina ha una massa di 58,44g ed è formata dal reticolo di Na⁺ e Cl⁻.' },
+            { id: 'H2SO4', name: 'Acido Solforico', formula: 'H₂SO₄', parsedFormula: { H: 2, S: 1, O: 4 }, molarMass: 98.08, state: 'Liquido', color: '#ca8a04', size: 18, shape: 'tetrahedral', fact: 'Un acido forte fondamentale nell\'industria chimica con elevata massa molare (98,08 g/mol).' },
+            { id: 'C6H12O6', name: 'Glucosio', formula: 'C₆H₁₂O₆', parsedFormula: { C: 6, H: 12, O: 6 }, molarMass: 180.16, state: 'Solido', color: '#db2777', size: 22, shape: 'ring', fact: 'Molecola organica complessa. Una singola mole di glucosio ha una massa notevole di 180,16 g!' },
+            { id: 'CaCO3', name: 'Carbonato di Calcio', formula: 'CaCO₃', parsedFormula: { Ca: 1, C: 1, O: 3 }, molarMass: 100.09, state: 'Solido', color: '#9333ea', size: 18, shape: 'crystal', fact: 'Componente principale del marmo e del calcare. 1 mole pesa comodamente circa 100 grammi!' },
+            { id: 'NH3', name: 'Ammoniaca', formula: 'NH₃', parsedFormula: { N: 1, H: 3 }, molarMass: 17.03, state: 'Gas', color: '#059669', size: 13, shape: 'pyramidal', fact: 'Gas molto leggero. Nonostante contenga 4 atomi totali, pesa solo 17,03 g/mol a causa dell\'idrogeno leggero.' },
+            { id: 'Au', name: 'Oro (Elementare)', formula: 'Au', parsedFormula: { Au: 1 }, molarMass: 196.97, state: 'Solido', color: '#d97706', size: 20, shape: 'atom', fact: 'Un singolo atomo di oro è molto pesante (Ar = 196,97). 1 mole d\'oro pesa quasi 200 grammi!' },
+            { id: 'H2', name: 'Idrogeno Molecolare', formula: 'H₂', parsedFormula: { H: 2 }, molarMass: 2.016, state: 'Gas', color: '#0284c7', size: 8, shape: 'diatomic', fact: 'La molecola più leggera dell\'universo! 1 intera mole pesa solamente 2,016 grammi.' },
+            { id: 'CuSO4', name: 'Solfato di Rame (II)', formula: 'CuSO₄', parsedFormula: { Cu: 1, S: 1, O: 4 }, molarMass: 159.61, state: 'Solido', color: '#2563eb', size: 19, shape: 'crystal', fact: 'Sale azzurro brillante con massa molare elevata dovuta all\'atomo di Rame (63,55 g/mol).' },
+            { id: 'O2', name: 'Ossigeno Molecolare', formula: 'O₂', parsedFormula: { O: 2 }, molarMass: 31.998, state: 'Gas', color: '#dc2626', size: 12, shape: 'diatomic', fact: 'Il gas indispensabile per la respirazione. 1 mole equivale a 32,00 grammi.' }
+        ];
+
+        /* Atomic Weights Table */
+        const atomicWeights = {
+            H: { name: 'Idrogeno', mass: 1.008, color: '#38bdf8' },
+            He: { name: 'Elio', mass: 4.0026, color: '#84cc16' },
+            C: { name: 'Carbonio', mass: 12.011, color: '#475569' },
+            N: { name: 'Azoto', mass: 14.007, color: '#10b981' },
+            O: { name: 'Ossigeno', mass: 15.999, color: '#ef4444' },
+            Na: { name: 'Sodio', mass: 22.990, color: '#f59e0b' },
+            Mg: { name: 'Magnesio', mass: 24.305, color: '#65a30d' },
+            Al: { name: 'Alluminio', mass: 26.982, color: '#64748b' },
+            S: { name: 'Zolfo', mass: 32.06, color: '#eab308' },
+            Cl: { name: 'Cloro', mass: 35.45, color: '#22c55e' },
+            K: { name: 'Potassio', mass: 39.098, color: '#a855f7' },
+            Ca: { name: 'Calcio', mass: 40.078, color: '#14b8a6' },
+            Fe: { name: 'Ferro', mass: 55.845, color: '#ea580c' },
+            Cu: { name: 'Rame', mass: 63.546, color: '#0284c7' },
+            Au: { name: 'Oro', mass: 196.97, color: '#d97706' }
+        };
+
+        const AVOGADRO = 6.02214076e23;
+        let pieChartInstance = null;
+        let currentCalcMode = 'm';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initSelectOptions();
+            updateBalance();
+            initMicroView();
+            initBuilderPalette();
+            calculateCustomFormula();
+            initCalculator();
+            initQuiz();
+            
+            // Handle window resize for canvas
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+            });
+        });
+
+        /* Navigation Tab Switcher */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-cyan-600', 'text-white', 'shadow-md');
+                btn.classList.add('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-100');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+            if(activeBtn) {
+                activeBtn.classList.add('bg-cyan-600', 'text-white', 'shadow-md');
+                activeBtn.classList.remove('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-100');
+            }
+
+            if(tabId === 'micro') {
+                setTimeout(() => {
+                    resizeCanvas();
+                    updateMicroView();
+                }, 50);
+            }
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        function initSelectOptions() {
+            const selectA = document.getElementById('select-a');
+            const selectB = document.getElementById('select-b');
+            const selectMicro = document.getElementById('micro-select');
+            const selectCalc = document.getElementById('calc-substance');
+
+            chemicalDatabase.forEach(sub => {
+                const optA = new Option(`${sub.formula} - ${sub.name}`, sub.id);
+                const optB = new Option(`${sub.formula} - ${sub.name}`, sub.id);
+                const optM = new Option(`${sub.formula} - ${sub.name}`, sub.id);
+                const optC = new Option(`${sub.formula} (${sub.molarMass} g/mol)`, sub.id);
+
+                selectA.add(optA);
+                selectB.add(optB);
+                selectMicro.add(optM);
+                selectCalc.add(optC);
+            });
+
+            // Set default choices
+            selectA.value = 'H2O';
+            selectB.value = 'NaCl';
+            selectMicro.value = 'H2O';
+            selectCalc.value = 'H2O';
+        }
+
+        function updateBalance() {
+            const subA = chemicalDatabase.find(s => s.id === document.getElementById('select-a').value);
+            const subB = chemicalDatabase.find(s => s.id === document.getElementById('select-b').value);
+
+            const molesA = parseFloat(document.getElementById('moles-a').value);
+            const molesB = parseFloat(document.getElementById('moles-b').value);
+
+            document.getElementById('moles-a-val').innerText = `${molesA.toFixed(2)} mol`;
+            document.getElementById('moles-b-val').innerText = `${molesB.toFixed(2)} mol`;
+
+            document.getElementById('substance-a-formula').innerText = subA.formula;
+            document.getElementById('substance-b-formula').innerText = subB.formula;
+
+            const massA = molesA * subA.molarMass;
+            const massB = molesB * subB.molarMass;
+
+            document.getElementById('mm-a').innerText = `${subA.molarMass.toFixed(2)} g/mol`;
+            document.getElementById('mm-b').innerText = `${subB.molarMass.toFixed(2)} g/mol`;
+
+            document.getElementById('mass-a').innerText = `${massA.toFixed(2)} g`;
+            document.getElementById('mass-b').innerText = `${massB.toFixed(2)} g`;
+
+            // Format Avogadro particles count
+            const countA = molesA * 6.022;
+            const countB = molesB * 6.022;
+            document.getElementById('particles-a').innerText = `${countA.toFixed(2)} × 10²³`;
+            document.getElementById('particles-b').innerText = `${countB.toFixed(2)} × 10²³`;
+
+            // Update SVG Visual Balance Beam Rotation
+            const beamGroup = document.getElementById('balance-beam-group');
+            const panAGroup = document.getElementById('pan-a-group');
+            const panBGroup = document.getElementById('pan-b-group');
+            const needle = document.getElementById('pointer-needle');
+
+            // Calculate tilt angle (-15 deg to +15 deg max)
+            const diff = massB - massA;
+            let angle = (diff / Math.max(massA, massB, 10)) * 20;
+            if(angle > 18) angle = 18;
+            if(angle < -18) angle = -18;
+
+            beamGroup.setAttribute('transform', `rotate(${angle})`);
+            // Counter rotate pans so they hang vertically
+            panAGroup.setAttribute('transform', `rotate(${-angle})`);
+            panBGroup.setAttribute('transform', `rotate(${-angle})`);
+
+            // Pointer needle
+            const needleAngle = angle * 1.5;
+            needle.setAttribute('transform', `rotate(${needleAngle} 400 180)`);
+
+            // SVG labels
+            document.getElementById('svg-text-a').textContent = `${massA.toFixed(1)}g`;
+            document.getElementById('svg-text-b').textContent = `${massB.toFixed(1)}g`;
+
+            // Update Status Banner
+            const banner = document.getElementById('balance-status-banner');
+            if(Math.abs(massA - massB) < 0.1) {
+                banner.className = "mt-4 px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-sm font-medium text-center text-emerald-900 shadow-sm";
+                banner.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-2"></i><strong>Perfetto Equilibrio!</strong> La massa sul piatto sinistro (${massA.toFixed(1)}g) è uguale alla massa sul piatto destro (${massB.toFixed(1)}g).`;
+            } else if(massA > massB) {
+                banner.className = "mt-4 px-4 py-2 rounded-xl bg-cyan-50 border border-cyan-200 text-sm font-medium text-center text-cyan-900 shadow-sm";
+                banner.innerHTML = `<i class="fa-solid fa-arrow-down-long text-cyan-600 mr-2"></i>Il Piatto Sinistro (<strong>${subA.formula}</strong>) è più pesante (${massA.toFixed(1)}g vs ${massB.toFixed(1)}g del piatto destro).`;
+            } else {
+                banner.className = "mt-4 px-4 py-2 rounded-xl bg-amber-50 border border-amber-200 text-sm font-medium text-center text-amber-900 shadow-sm";
+                banner.innerHTML = `<i class="fa-solid fa-arrow-down-long text-amber-600 mr-2"></i>Il Piatto Destro (<strong>${subB.formula}</strong>) è più pesante (${massB.toFixed(1)}g vs ${massA.toFixed(1)}g del piatto sinistro).`;
+            }
+        }
+
+        function presetBalance(idA, molA, idB, molB) {
+            document.getElementById('select-a').value = idA;
+            document.getElementById('moles-a').value = molA;
+            document.getElementById('select-b').value = idB;
+            document.getElementById('moles-b').value = molB;
+            updateBalance();
+        }
+
+        let particlesArray = [];
+        let canvasAnimationId = null;
+
+        function initMicroView() {
+            resizeCanvas();
+            updateMicroView();
+            animateCanvas();
+        }
+
+        function resizeCanvas() {
+            const canvas = document.getElementById('particle-canvas');
+            if(!canvas) return;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+
+        function updateMicroView() {
+            const sub = chemicalDatabase.find(s => s.id === document.getElementById('micro-select').value);
+            if(!sub) return;
+
+            document.getElementById('micro-formula-display').innerText = sub.formula;
+            document.getElementById('micro-name-display').innerText = sub.name;
+            document.getElementById('micro-molar-mass').innerText = `${sub.molarMass.toFixed(3)} g/mol`;
+            document.getElementById('micro-state-display').innerText = sub.state;
+            document.getElementById('micro-didactic-fact').innerText = sub.fact;
+
+            // Render Atomic Breakdown Table
+            const breakdownDiv = document.getElementById('micro-atomic-breakdown');
+            breakdownDiv.innerHTML = '';
+
+            let totalMass = sub.molarMass;
+            const labels = [];
+            const massContributions = [];
+            const colors = [];
+
+            for(let [elem, count] of Object.entries(sub.parsedFormula)) {
+                const info = atomicWeights[elem] || { name: elem, mass: 12.0, color: '#0284c7' };
+                const partialMass = count * info.mass;
+                const percentage = ((partialMass / totalMass) * 100).toFixed(1);
+
+                labels.push(`${elem} (${info.name})`);
+                massContributions.push(partialMass.toFixed(2));
+                colors.push(info.color);
+
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200";
+                row.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full inline-block" style="background-color: ${info.color}"></span>
+                        <span class="font-bold text-slate-800">${elem}</span>
+                        <span class="text-[11px] text-slate-500">(${info.name})</span>
+                    </div>
+                    <div class="font-mono text-right">
+                        <div class="text-cyan-800 font-bold">${count} × ${info.mass.toFixed(2)} g</div>
+                        <div class="text-[10px] text-slate-500">${percentage}% della massa</div>
+                    </div>
+                `;
+                breakdownDiv.appendChild(row);
+            }
+
+            // Update Chart.js Pie Chart
+            renderPieChart(labels, massContributions, colors);
+
+            // Re-spawn Particles for Canvas
+            spawnParticles(sub);
+        }
+
+        function renderPieChart(labels, data, colors) {
+            const ctx = document.getElementById('mass-pie-chart').getContext('2d');
+            if(pieChartInstance) pieChartInstance.destroy();
+
+            pieChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#334155', font: { size: 11, family: 'Inter' } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.label}: ${context.raw} g/mol`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        /* 2D Particle Engine for Canvas */
+        function spawnParticles(substance) {
+            const canvas = document.getElementById('particle-canvas');
+            if(!canvas) return;
+            particlesArray = [];
+
+            const numParticles = 28;
+            for(let i = 0; i < numParticles; i++) {
+                particlesArray.push({
+                    x: Math.random() * (canvas.width - 40) + 20,
+                    y: Math.random() * (canvas.height - 40) + 20,
+                    vx: (Math.random() - 0.5) * (substance.state === 'Gas' ? 2.5 : substance.state === 'Liquido' ? 1.2 : 0.2),
+                    vy: (Math.random() - 0.5) * (substance.state === 'Gas' ? 2.5 : substance.state === 'Liquido' ? 1.2 : 0.2),
+                    radius: substance.size,
+                    color: substance.color,
+                    shape: substance.shape,
+                    formula: substance.formula
+                });
+            }
+
+            // Legend
+            document.getElementById('canvas-legend').innerHTML = `
+                <span class="w-3 h-3 rounded-full" style="background-color:${substance.color}"></span>
+                <span>Rappresentazione molecolare di <strong>${substance.formula}</strong> (${substance.state})</span>
+            `;
+        }
+
+        function animateCanvas() {
+            const canvas = document.getElementById('particle-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw subtle background grid
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            for(let x = 0; x < canvas.width; x += 30) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for(let y = 0; y < canvas.height; y += 30) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+
+            // Render and move particles
+            particlesArray.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Bounce boundaries
+                if(p.x - p.radius < 0 || p.x + p.radius > canvas.width) p.vx *= -1;
+                if(p.y - p.radius < 0 || p.y + p.radius > canvas.height) p.vy *= -1;
+
+                // Render particle molecule shape
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = 0.85;
+                ctx.fill();
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+                ctx.globalAlpha = 1.0;
+
+                // Label formula inside particle
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 9px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(p.formula, p.x, p.y);
+            });
+
+            canvasAnimationId = requestAnimationFrame(animateCanvas);
+        }
+
+        function initBuilderPalette() {
+            const palette = document.getElementById('element-palette');
+            palette.innerHTML = '';
+
+            const commonElements = ['H', 'C', 'N', 'O', 'Na', 'Mg', 'Al', 'S', 'Cl', 'K', 'Ca', 'Fe', 'Cu', 'Au'];
+            commonElements.forEach(elem => {
+                const info = atomicWeights[elem];
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => appendToBuilderInput(elem);
+                btn.className = "p-1.5 rounded-lg bg-slate-50 hover:bg-cyan-50 border border-slate-200 text-center transition group shadow-xs";
+                btn.innerHTML = `
+                    <div class="text-xs font-bold text-cyan-800 group-hover:scale-110 transition">${elem}</div>
+                    <div class="text-[9px] text-slate-500">${info.mass.toFixed(1)}</div>
+                `;
+                palette.appendChild(btn);
+            });
+        }
+
+        function setBuilderInput(str) {
+            document.getElementById('builder-input').value = str;
+            calculateCustomFormula();
+        }
+
+        function appendToBuilderInput(str) {
+            const input = document.getElementById('builder-input');
+            input.value += str;
+            calculateCustomFormula();
+        }
+
+        function parseChemicalFormula(formulaStr) {
+            // Regex parser for formulas like H2SO4, C6H12O6, NaCl
+            const regex = /([A-Z][a-z]*)(\d*)/g;
+            let match;
+            const counts = {};
+
+            while ((match = regex.exec(formulaStr)) !== null) {
+                const element = match[1];
+                const count = match[2] === '' ? 1 : parseInt(match[2], 10);
+                if (atomicWeights[element]) {
+                    counts[element] = (counts[element] || 0) + count;
+                }
+            }
+            return counts;
+        }
+
+        function calculateCustomFormula() {
+            const rawStr = document.getElementById('builder-input').value.trim();
+            const parsed = parseChemicalFormula(rawStr);
+            const tableBody = document.getElementById('builder-table-body');
+            tableBody.innerHTML = '';
+
+            let grandTotal = 0;
+            const exprParts = [];
+
+            if(Object.keys(parsed).length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-rose-600 font-semibold">Formula non valida o elemento non presente nel database semplice.</td></tr>`;
+                document.getElementById('builder-result-badge').innerText = `M = 0,00 g/mol`;
+                document.getElementById('builder-math-expression').innerText = `Formula non riconosciuta.`;
+                return;
+            }
+
+            for(let [elem, count] of Object.entries(parsed)) {
+                const info = atomicWeights[elem];
+                const partialMass = count * info.mass;
+                grandTotal += partialMass;
+            }
+
+            for(let [elem, count] of Object.entries(parsed)) {
+                const info = atomicWeights[elem];
+                const partialMass = count * info.mass;
+                const percent = ((partialMass / grandTotal) * 100).toFixed(1);
+
+                exprParts.push(`(${count} × ${info.mass.toFixed(2)})`);
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2 font-bold text-cyan-800">${elem} <span class="text-[10px] font-normal text-slate-500">(${info.name})</span></td>
+                    <td class="p-2 text-center text-slate-800 font-bold">${count}</td>
+                    <td class="p-2 text-right text-slate-500">${info.mass.toFixed(3)} g/mol</td>
+                    <td class="p-2 text-right font-bold text-emerald-700">${partialMass.toFixed(3)} g/mol</td>
+                    <td class="p-2 text-right text-amber-700 font-bold">${percent}%</td>
+                `;
+                tableBody.appendChild(tr);
+            }
+
+            document.getElementById('builder-result-badge').innerText = `M = ${grandTotal.toFixed(3)} g/mol`;
+            document.getElementById('builder-math-expression').innerText = `M (${rawStr}) = ${exprParts.join(' + ')} = ${grandTotal.toFixed(3)} g/mol`;
+        }
+
+        function initCalculator() {
+            setCalcMode('m');
+        }
+
+        function setCalcMode(mode) {
+            currentCalcMode = mode;
+            document.querySelectorAll('.calc-mode-btn').forEach(btn => {
+                btn.classList.remove('border-cyan-500', 'bg-cyan-50');
+                btn.classList.add('border-slate-200', 'bg-slate-50');
+            });
+
+            const activeBtn = document.getElementById(`calc-mode-${mode}`);
+            if(activeBtn) {
+                activeBtn.classList.remove('border-slate-200', 'bg-slate-50');
+                activeBtn.classList.add('border-cyan-500', 'bg-cyan-50');
+            }
+
+            const container = document.getElementById('calc-inputs-container');
+            container.innerHTML = '';
+
+            if(mode === 'm') {
+                container.innerHTML = `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Inserisci Moli (n in mol):</label>
+                        <input type="number" id="calc-input-n" value="1.0" step="0.1" min="0.001" oninput="runCalculator()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 font-mono font-bold text-cyan-800 focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                    </div>
+                `;
+            } else if(mode === 'n') {
+                container.innerHTML = `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Inserisci Massa (m in grammi):</label>
+                        <input type="number" id="calc-input-m" value="18.02" step="0.1" min="0.001" oninput="runCalculator()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 font-mono font-bold text-cyan-800 focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                    </div>
+                `;
+            } else if(mode === 'N') {
+                container.innerHTML = `
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Inserisci Moli (n in mol):</label>
+                        <input type="number" id="calc-input-n" value="1.0" step="0.1" min="0.001" oninput="runCalculator()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 font-mono font-bold text-cyan-800 focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                    </div>
+                `;
+            }
+
+            runCalculator();
+        }
+
+        function runCalculator() {
+            const sub = chemicalDatabase.find(s => s.id === document.getElementById('calc-substance').value);
+            if(!sub) return;
+
+            const M = sub.molarMass;
+            const display = document.getElementById('calc-result-display');
+            const explanation = document.getElementById('calc-explanation');
+            const gasVolume = document.getElementById('calc-gas-volume');
+
+            if(currentCalcMode === 'm') {
+                const n = parseFloat(document.getElementById('calc-input-n')?.value || 1.0);
+                const mass = n * M;
+                display.innerText = `m = ${mass.toFixed(2)} g`;
+                explanation.innerText = `Passaggi: m = n × M = ${n} mol × ${M.toFixed(3)} g/mol = ${mass.toFixed(2)} g`;
+                gasVolume.innerText = `${(n * 22.414).toFixed(2)} L`;
+            } else if(currentCalcMode === 'n') {
+                const m = parseFloat(document.getElementById('calc-input-m')?.value || 18.02);
+                const n = m / M;
+                display.innerText = `n = ${n.toFixed(4)} mol`;
+                explanation.innerText = `Passaggi: n = m / M = ${m} g / ${M.toFixed(3)} g/mol = ${n.toFixed(4)} mol`;
+                gasVolume.innerText = `${(n * 22.414).toFixed(2)} L`;
+            } else if(currentCalcMode === 'N') {
+                const n = parseFloat(document.getElementById('calc-input-n')?.value || 1.0);
+                const count = n * 6.022;
+                display.innerText = `N = ${count.toFixed(3)} × 10²³ part.`;
+                explanation.innerText = `Passaggi: N = n × NA = ${n} mol × (6,022 × 10²³) = ${count.toFixed(3)} × 10²³ molecole/atomi`;
+                gasVolume.innerText = `${(n * 22.414).toFixed(2)} L`;
+            }
+        }
+
+        const quizQuestions = [
+            {
+                q: "1. Due recipienti contengono entrambi 1,0 mole di sostanza: il primo contiene H₂O, il secondo contiene CO₂. Quale affermazione è CORRECTA?",
+                options: [
+                    "Il recipiente di H₂O contiene più molecole perché l'acqua è liquida.",
+                    "Entrambi i recipienti contengono lo stesso numero esatto di molecole (6,022 × 10²³).",
+                    "Il recipiente di CO₂ pesa meno perché le molecole dei gas sono più leggere.",
+                    "Il recipiente di H₂O ha una massa molare maggiore di CO₂."
+                ],
+                correct: 1,
+                explain: "La mole misura il numero di particelle! 1 mole contiene sempre 6,022 × 10²³ molecole, indipendentemente dal tipo di sostanza o dal suo stato fisico."
+            },
+            {
+                q: "2. Qual è la massa di 2,0 moli di Cloruro di Sodio (NaCl), sapendo che M(NaCl) = 58,44 g/mol?",
+                options: [
+                    "29,22 g",
+                    "58,44 g",
+                    "116,88 g",
+                    "60,44 g"
+                ],
+                correct: 2,
+                explain: "Usiamo la formula m = n × M. Quindi: m = 2,0 mol × 58,44 g/mol = 116,88 grammi."
+            },
+            {
+                q: "3. Sapendo che la massa molare dell'Idrogeno (H₂) è circa 2,0 g/mol e quella dell'Oro (Au) è circa 197,0 g/mol, quante moli ci sono in 197 grammi di Idrogeno molecolare?",
+                options: [
+                    "1,0 mole",
+                    "circa 98,5 moli",
+                    "197 moli",
+                    "0,5 moli"
+                ],
+                correct: 1,
+                explain: "Usiamo n = m / M. Quindi: n = 197 g / 2,0 g/mol = 98,5 moli di H₂!"
+            },
+            {
+                q: "4. A condizioni standard di temperatura e pressione (STP: 0 °C, 1 atm), quale volume occupa 1,0 mole di un qualsiasi gas ideale?",
+                options: [
+                    "1,0 Litro",
+                    "10,0 Litri",
+                    "22,414 Litri",
+                    "100,0 Litri"
+                ],
+                correct: 2,
+                explain: "Per la legge di Avogadro, 1 mole di qualsiasi gas ideale a STP (0 °C, 1 atm) occupa sempre esattamente 22,414 litri."
+            },
+            {
+                q: "5. Calcola la massa molare dell'Acido Solforico (H₂SO₄). [Ar(H) = 1,008, Ar(S) = 32,06, Ar(O) = 15,999]",
+                options: [
+                    "49,04 g/mol",
+                    "98,08 g/mol",
+                    "64,00 g/mol",
+                    "180,16 g/mol"
+                ],
+                correct: 1,
+                explain: "M = (2 × 1,008) + (1 × 32,06) + (4 × 15,999) = 2,016 + 32,06 + 63,996 = 98,08 g/mol."
+            }
+        ];
+
+        let quizUserAnswers = Array(quizQuestions.length).fill(null);
+
+        function initQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+
+            quizQuestions.forEach((qObj, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl p-5 border border-slate-200 shadow-md space-y-4";
+                
+                let optionsHTML = '';
+                qObj.options.forEach((opt, optIndex) => {
+                    optionsHTML += `
+                        <button onclick="answerQuiz(${index}, ${optIndex})" id="quiz-opt-${index}-${optIndex}" class="quiz-opt-btn w-full text-left p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 hover:bg-slate-100 transition flex items-center justify-between">
+                            <span>${opt}</span>
+                            <i class="fa-regular fa-circle text-slate-400"></i>
+                        </button>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="font-bold text-sm text-slate-900">${qObj.q}</div>
+                    <div class="space-y-2">${optionsHTML}</div>
+                    <div id="quiz-explain-${index}" class="hidden text-xs p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700"></div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function answerQuiz(qIdx, optIdx) {
+            quizUserAnswers[qIdx] = optIdx;
+            const qObj = quizQuestions[qIdx];
+
+            // Highlight chosen buttons
+            qObj.options.forEach((_, idx) => {
+                const btn = document.getElementById(`quiz-opt-${qIdx}-${idx}`);
+                btn.className = "quiz-opt-btn w-full text-left p-3 rounded-xl border text-xs transition flex items-center justify-between ";
+                if(idx === qObj.correct) {
+                    btn.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-900', 'font-semibold');
+                } else if(idx === optIdx && optIdx !== qObj.correct) {
+                    btn.classList.add('bg-rose-50', 'border-rose-500', 'text-rose-900', 'font-semibold');
+                } else {
+                    btn.classList.add('bg-slate-50', 'border-slate-200', 'opacity-50', 'text-slate-500');
+                }
+            });
+
+            // Show explanation
+            const expDiv = document.getElementById(`quiz-explain-${qIdx}`);
+            expDiv.classList.remove('hidden');
+            if(optIdx === qObj.correct) {
+                expDiv.className = "text-xs p-3 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 font-medium";
+                expDiv.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i><strong>Esatto!</strong> ${qObj.explain}`;
+            } else {
+                expDiv.className = "text-xs p-3 rounded-xl bg-rose-50 border border-rose-300 text-rose-900 font-medium";
+                expDiv.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 mr-1.5"></i><strong>Sbagliato!</strong> ${qObj.explain}`;
+            }
+
+            // Calculate Score
+            let score = 0;
+            quizUserAnswers.forEach((ans, i) => {
+                if(ans === quizQuestions[i].correct) score++;
+            });
+            document.getElementById('quiz-score').innerText = `${score} / ${quizQuestions.length}`;
+        }
+
+        function resetQuiz() {
+            quizUserAnswers = Array(quizQuestions.length).fill(null);
+            document.getElementById('quiz-score').innerText = `0 / ${quizQuestions.length}`;
+            initQuiz();
+        }
+    </script>
+</body>
+</html>
